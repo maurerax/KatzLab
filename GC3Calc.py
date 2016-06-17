@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-import string, os, re
+import string
 from Bio import SeqIO
-outfile = open('codonStats.txt','w')
-outfile.close()
+import sys
 
 
-		
+"""Usage has been updated. You must specify the file in the command line!"""
+#  katzlab$ python GC3Calc.py myFastaFile.fasta
+
 
 def checkorf(f,seq2id,nt):
 	pos = {} #  eg pos[(43,T)] == 1 means the 43 nuc is a T and is in  codon position 1
@@ -14,7 +15,7 @@ def checkorf(f,seq2id,nt):
 	firsts = []
 	seconds = []
 	thirds = []
-	outfile = open(f.split('.fas')[0]+'_codonStats.txt','a')
+	outfile = open(f.split('.')[0]+'_codonStats.txt','a')
 	outfile.write(seq2id + '\t')
 	flag = 0
 	count = 0
@@ -51,10 +52,10 @@ def checkorf(f,seq2id,nt):
 	#print seq2id + ':' + str(degensites.count('c') + degensites.count('C') + degensites.count('g') + degensites.count('G')) + ':' + str(len(degensites))
 	
 	GCall = float(all.count('c') + all.count('C') + all.count('g') + all.count('G'))/float(len(all))
-	outfile.write('\tGCall\t' +  str(GCall) + '\t')
+	outfile.write('\tGCall\t' +  str(GCall))
 	
 	GCthirds = float(thirds.count('c') + thirds.count('C') + thirds.count('g') + thirds.count('G'))/float(len(thirds))
-	outfile.write('\tGCthirds\t' +  str(GCthirds) + '\t')
+	outfile.write('\tGCthirds\t' +  str(GCthirds))
 	
 	
 	GCdegen = float(degensites.count('c') + degensites.count('C') + degensites.count('g') + degensites.count('G'))/float(len(degensites))
@@ -90,15 +91,15 @@ def codoncheck(codon):
 		return 'Stop'
 
 def main():
-	for f in os.listdir(os.curdir):
-		if re.search('.fas',f):
-			inseq1 = SeqIO.parse(f,'fasta')
-
-			for seq1 in inseq1:
-
-				try:
-					checkorf(f,seq1.id,str(seq1.seq))
-				except:
-					print seq1.id
+	if len(sys.argv) > 1:
+		f = sys.argv[1]
+	else:
+		f = raw_input('What is your FASTA file named? ')
+	inseq1 = SeqIO.parse(f,'fasta')
+	for seq1 in inseq1:
+		try:
+			checkorf(f,seq1.id,str(seq1.seq))
+		except:
+			print seq1.id
 
 main()
