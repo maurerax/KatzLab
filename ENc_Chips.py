@@ -4,7 +4,7 @@ print 'This calculates the codon bias of your input file - change file name in s
 print 'for information about chips, see http://emboss.toulouse.inra.fr/cgi-bin/emboss/help/chips'
 
 
-import os
+import os,re
 from Bio import SeqIO
 import sys
 
