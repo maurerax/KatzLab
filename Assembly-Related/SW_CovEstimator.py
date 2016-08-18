@@ -6,8 +6,12 @@ part of the bbtools package by Brian Brushnell: https://sourceforge.net/projects
 
 ########################################################################################
 ## OF NOTE:the isolate_names function can be used for any time you wish to separate a ##
-##.csv file based on the name of the first column ()								  ##
+##.csv file based on the name of the first column ()   				      ##
 ########################################################################################
+
+Also, this script is intended to produce the files needed for SW_CovAvg.py (which is in this folder too!)
+
+Once I get less lazy, I will merge the two scripts into one master function (but that will wait)
 """
 
 ## Must have run bbmap on your contigs prior to using this script (for now).
