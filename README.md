@@ -1,6 +1,6 @@
 # Basic-Informatics-Katzlab-
 
-Hosts all the scripts that Xyrus X. Maurer-Alcala has used for various projects. 
+Hosts all the scripts that Xyrus X. Maurer-Alcalá has used for various projects. 
 
 Usage info is often found in the scripts themselves, although most will be as user friendly as possible (prompting the user for inputs if none are given in the command line)
 
