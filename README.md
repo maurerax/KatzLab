@@ -6,6 +6,6 @@ Usage information is found in each script. Also, notes on the intent of the scri
 
 These scripts were used for the following publication (please cite, if using):
 
-"Maurer-Alcalá, X.X., Knight, R., L.A. Katz. Single-cell ‘Omics to Explore the Germline Genome of Chilodonella uncinata."
+"Maurer-Alcalá, X.X., Knight, R., L.A. Katz. Exploring the Germline Genome of the Ciliate Chilodonella uncinata Through Single-cell ‘omics (Transcriptomics and Genomics)"
 
-Last Updated: 16-05-2017
+Last Updated: 18-08-2017
