@@ -1,9 +1,28 @@
-# Basic-Informatics-Katzlab-
+# HTS Processing for the KatzLab Phylogenomic Pipeline
 
-Hosts all the scripts that Xyrus X. Maurer-Alcala has used for various projects. 
+Tools to Process HTS data in conjunction with the KatzLab Phylogenomic Pipeline
 
-Usage info is often found in the scripts themselves, although most will be as user friendly as possible (prompting the user for inputs if none are given in the command line)
+### For more information:
+Request viewing access to [Katz-Lab SciWiki](https://sciwiki.smith.edu/katzlab_phylo/index.php/Main_Page) from current members of the Katz Lab at Smith College. 
 
-Do note, that scripts are being binned into folders by relative purpose. Inted was for names of scripts to be useful, but they may not be very helpful in deciphering what they do, so again open up script in a text editor and you can find more info there.
+There you will find detailed information about each major script (step) as well as more detailed information on assembler choice and the phylogenomic pipeline as well. 
 
--- Last updated 18/08/2016
+
+#### Note about PostAssembly.tar.gz 
+
+This pre-zipped file contains the folder structure and scripts ready for use and broken down by data type.
+
+
+#### Databases for PostAssembly.tar.gz
+
+These can be downloaded from: ["Post-Assembly from GoogleDrive"](https://drive.google.com/drive/u/1/folders/0B7QiJDySGTwcSmtwNEdnUkpfUmc, "Post-Assembly from GoogleDrive")
+
+
+## If using please cite (Needs to be Updated):
+
+Maurer-Alcalá, X.X., Knight, R., Katz, L.A. 201#. Exploring the Germline Genome of the Ciliate Chilodonella uncinata Through Single-cell ‘omics (Transcriptomics and Genomics). Mbio?
+
+Maurer-Alcalá, X.X., Yan, Y., Pilling, O., Knight, R., Katz, L.A. 201#. Twisted Tales: Insights into Genome Diversity of Ciliates Using Single-Cell Genomics. Journal?
+
+
+
