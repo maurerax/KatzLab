@@ -7,6 +7,8 @@ Request viewing access to [Katz-Lab SciWiki](https://sciwiki.smith.edu/katzlab_p
 
 There you will find detailed information about each major script (step) as well as more detailed information on assembler choice and the phylogenomic pipeline as well. 
 
+You can also find a full tutorial through the Katz-Lab maintained manual (designed for complete beginners)[Katz-Lab Tutorial](https://docs.google.com/document/d/1byF6Ic3vW9Sq_nwsHN3TqoL01r3D-5_IiY9mCDMZXyo/edit?usp=sharing)
+
 
 #### Note about PostAssembly.tar.gz 
 
