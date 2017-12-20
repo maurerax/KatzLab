@@ -1,0 +1,264 @@
+# This is a brief outline of the steps and software needed to process single-cell germline genome assemblies.
+
+# What you will find in here:
+
+# 1. Software dependencies and 'work-arounds'
+# 2. Aims and scope of these steps
+# 3. Preperation of genome-scale data
+# 3.1 Types of data accepted
+# 3.2 Contig filtering
+# 3.3 ORF prediction
+# 3.4 Soma mapping
+# 3.5 Identifying the 'Best' germline scaffolds
+# 4. Extracting information on germline-soma architecture
+# 4.1 Soma mapping Part 2
+# 4.2 MDS-IES hunting
+# 5. Interpreting results
+
+# Before starting, please make sure that you have placed the scripts used here in the same folder as the data-sets you
+# want to work with. I recommend making a new folder for each germline genome to be safe!
+
+
+## 1. Software dependencies and 'work-arounds' ##
+
+All these scripts have been written to be compatible with [Python (v2.7)](https://www.python.org/download/releases/2.7/)
+
+Similarly, BioPython (and its dependencies) are required, with great installation instructions on their page(s).
+
+[BioPython](http://biopython.org/wiki/Download)
+
+For open reading frame prediction, we have relied on AUGUSTUS. I know that this software can be a pain 
+to install depending on what system you are using, so an 'easy' alternative is to use their web-interface.
+
+[AUGUSTUS download](http://augustus.gobics.de/binaries/) or [AUGUSTUS Web Server](http://bioinf.uni-greifswald.de/webaugustus/)
+
+For mapping somatic sequences to the germline, we use the most current version of [BLAST+](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
+
+
+## 2. Aims and scope of these steps ##
+
+The original aim of these steps were to provide a relatively large-scale overview of the germline genome architecture of the
+ciliate Chilodonella uncinata. This was to be done in the absence of a somatic genome and the partial sequencing of the germline
+genome. It is worth noting that for both our proxy of the somatic genome and the partial germline genome that we sequenced were produced 
+from single-cell transcriptomics and genomics methods (see the reference in the ReadMe for more information). 
+
+With that in mind, these scripts (in their current state, as of 11/2017) are meant to provide you with the means to discriminate between
+germline and somatic architectures. This is only meant to HELP you and is not definitive! You will need to check the outputs! You should not
+need to look at every putatively mapped germline locus, but you should check that the built-in parameters are sufficient.
+
+Do note that since the data originally used were transcriptomic data, that despite my best efforts, it is difficult to come up with broad
+sweeping rules to distinguish between intron-exon boundaries and putative germline-soma boundaries. 
+
+I cannot stress this enough that these scripts are a tool to aid in the identification of patterns of germline soma architecture!
+
+If you need help or have questions, please contact me (Xyrus -- maurerax@gmail.com or xyrus.maurer-alcala@izb.unibe.ch)
+
+
+
+## 3. Preperation of genome-scale data
+
+# 3.1 Types of data accepted
+
+These scripts are expecting the raw assembly of the germline genome in a fasta format. This means that you must assemble the data
+using your genome assembler of choice. We have used SPAdes in the past (a single-cell genome assembler) and MaSuRCA.
+
+In the current version of these scripts (from 2017), the expected inputs for the 'soma' is a transcriptome file. It can be the 'raw'
+assembly if you choose or it can be a sub-set of the transcripts. If there is a desire to use whole somatic genome data, please contact me
+and I can work to adjust some of the scripts to aid in processing as this was not within our oiriginal scope.
+
+Then that's it!
+
+
+# 3.2 Contig filtering
+
+As part of the preparation of the germline genome data, you will need to remove short contigs. In our experience,
+it is highly dependent on the quality of the assembly. IF possible, I would recommend remove ALL contigs shorter than 10,000 bp.
+
+However! Sometimes the sequencing was too shallow and the bulk of contigs are between 1,000 and 20,000 bp. If this is the case, then 
+it is up to you to use your best judgement. Do note though that for mapping of transcripts (which are often ~400-700bp) you want to
+have germline scaffolds that are at least TWICE that size. This means that I am urging you not to use germline scaffolds shorter than
+1,000 bp.
+
+The script, ContigFiltStats.py, is used to help you prepare your germline data by removing those short contigs.
+
+Example usage (General):
+
+katzlab$ python ContigFiltStats.py InputAssembly.fasta WellNamedOutput.Size Size Assembler
+
+InputAssembly.fasta -- this is your RAW germline assembly
+WellNamedOutput.Size -- this is the output name of the 'clean-er' assembly. I suggest including the filtering size
+Size -- threshold of minimum size (in base pairs) of contigs to keep. This is a number with no formatting (e.g. 10000)
+Assembler -- THIS IS OPTIONAL, but if you used SPAdes (and include it there), then it will track the relative read coverage too.
+
+Example usage ("Real"):
+
+katzlab$ python ContigFiltStats.py Chilo_LKH133_136_15_04_2017.fasta Chilo_Germ_Filt_1.10kbp 10000 spades
+
+EXPECTED OUTPUTS:
+
+You will have the WellNamedOutput.Size.fasta, which includes all the contigs of equal or greater size than the threshold you set.
+The contig names will be 'flattened' down to a very basic name (e.g. Contig_1_length_217483) and will not necessarily match the 
+original name!
+
+There will also be a spreadsheet, WellNamedOutput.Size.tsv. This will have information regarding size and GC content. If you included
+"SPAdes" as the assembler then coverage information will be included too.
+
+
+# 3.3 ORF prediction
+
+Given that the architecture of ciliate germline genomes are fairly complex, including IESs that interrupt somatic coding sequences,
+prediction of complete ORFs is expected to be difficult. With this in mind, the original organism this was developed for, Chilodonella
+uncinata, is a bacterivore. Any ORF rich contig in C. uncinata is therefore most likely from 'food' contamination. This is a very
+general rule and should be adjusted for your organisms' germline genome (if you know anything yet!) as it may not work appropriately
+(see Tetrahymena thermophila).
+
+With that in mind, you will use the SIZE-FILTERED germline genome assembly with AUGUSTUS:
+
+Using our 'real' example:
+
+katzlab$ augustus --genemodel=complete --species ecolik12  Chilo_Germ_Filt_1.10kbp.fasta > Chilo_Germ_Filt_1.10kbp.gtf
+
+If you cannot get augustus to work (which does happen), then refer to WebAugustus's prediction tutorial. All you need to do there
+is upload your data (it must be < 100Mb though...), select E. coli as your organismal model and only accept complete ORFs.
+
+The output you will want will be a .gtf 
+
+
+# 3.4 Soma mapping
+
+In the mean time, you can easily map the transcripts to the scaffolds with BLAST+ with high identity.
+
+Firt you will need to make the germline assembly the database:
+
+katzlab$ makeblastdb -in Chilo_Germ_Filt_1.10kbp.fasta -dbtype nucl -out Chilo_Germ_Filt_1.10kbp.fasta
+
+Then you can BLAST the germline with your somatic data!
+
+Example usage:
+
+blastn -query Chilo_Transcriptome.fasta -db Chilo_Germ_Filt_1.10kbp.fasta -perc_identity 97 -max_target_seqs 1 -outfmt 6 -out ChiloTrans.Germ_10kbp.97ID.tsv
+
+I like to include parameters that I used in the output name (see -out).
+
+
+# 3.5 Identifying the 'Best' germline scaffolds
+
+Once you have BLAST-ed the somatic data against the germline AND have produced the .gtf file then you can move on to the rough
+categorization of your germline scaffolds.
+
+This is done very roughly. It calculates the proportion of every scaffold that contains ORFs {(# gene predictions* 2,000 bp)/(scaffold length)} as well as the number of transcripts that mapped to the scaffold.
+
+In general, scaffolds with a few ( > 1) transcript and are estimated to be < 20% protein coding genes are considered "Supported" germline scaffolds. 
+
+Scaffolds with > 20% of their length covered with protein coding genes are broadly discriminated against as 'Bacterial' or 'Non-target'
+
+Finally those scaffolds with 0 transcript hits with < 20% protein coding genes are considered "Unsupported". There is not much that can be said about them unfortunately. They could harbor repetitive elements or perhaps are 'MDS deserts' or perhaps the somatic data used was not exhaustive enough (that's okay!).
+
+The script that does this discriminatin is: BinScaffoldsGermSoma.py
+
+Example usage:
+
+katzlab$ python BinScaffoldsGermSoma.py Chilo_Germ_Filt_1.10kbp.fasta ChiloTrans.Germ_10kbp.97ID.tsv Chilo_Germ_Filt_1.10kbp.gtf
+
+Note the order! Size-Filtered-Germline-Assembly, Soma-Germline-Blast-TSV, then ORF-Predictions-GTF
+
+There are two outputs that you should then find:
+
+Chilo_Germ_Filt_1.10kbp.CategorizedGermSoma.tsv -- spreadsheet summary of the binning (you can look at GC and other parameters)
+Chilo_Germ_Filt_1.10kbp.CategorizedGermSoma.fasta -- Fasta file of all the 'Best Supported' scaffolds
+
+The most important of these outputs is the Chilo_Germ_Filt_1.10kbp.CategorizedGermSoma.fasta file. The names of the contigs are also updated to help make it clear that these are LIKELY germline sequences (>Contig_1_length_217483_BsupGerm)
+
+You're now ready to actually try and identify germline-soma architecture! (woo!)
+
+
+## 4. Extracting information on germline-soma architecture
+
+From this point on there are only two files that you need that you have already prepped. The 'CategorizedGermSoma.fasta' file and the somatic data file (e.g. Transcriptome.fasta)
+
+The following scripts have been designed to help you determine MDS-IES structures. Sometimes unusual assembly things arise 
+and it is HIGHLY suggested that you take some of the output spreadsheets, find a few interesting examples of scrambled
+and non-scrambled genome architectures and then actually look at them aligned (through Dot-Blots or whatever you like).
+
+I would look for pointer sequences and ensure that they do not look like intron-exon boundaries (i.e. GT-YAG; check for reverse complements too!). Also note that repetitive parts of transcripts are difficult for BLAST to handle occassionally and can look like MDS-IES structure even though it is not!
+
+If you are ever concerned, then contact me with a Fasta of a few of your examples and their corresponding data in the output spreadsheets!
+
+
+# 4.1 Soma mapping Part 2
+
+You will once again use BLAST to mapp your transcriptome data against the germline genome assembly, but it will be slightly different.
+
+First, you will need to format a new blast database using the 'supported' germline scaffolds:
+
+katzlab$ makeblastdb -in Chilo_Germ_Filt_1.10kbp.CategorizedGermSoma.fasta -dbtype nucl -out Chilo_Germ_Filt_1.10kbp.CategorizedGermSoma.fasta
+
+Example usage:
+
+katzlab$ blastn -query Chilo_Transcriptome.fasta -db Chilo_Germ_Filt_1.10kbp.CategorizedGermSoma.fasta -perc_identity 97 -ungapped -word_size 25 -outfmt 6 -out ChiloTrans.BSupGerm.97ID.Ungap.25wrd.tsv
+
+Why 97% identity? Well, it is difficult to distinguish between sequencing error (experimentally Illumina platforms are ~97% accurate), assembly issues, error-correction difficulties, recent paralogs, or alleles! This should allow relatively accurate mapping of the soma to the germline.
+
+Ungapped? If you do not select ungapped, non-scrambled MDS will be difficult to identify as BLAST will 'stretch' the somatic sequence
+over these IESs, treating them like gaps! We don't want this! By saying 'Ungapped' blast will split the MDSs into distinct entries, 
+which makes them easier to identify and manage.
+
+Alright ... so word_size of 25? word_size is what blast uses to find minimum alignments at the identity that you choose. So in our case, 
+for there to be a 'hit', there must be an alignment of at least 25 bp at 97% identity (the default is 13bp). Why 25bp though? That's a 
+bit arbitrarily chosen, but in the definition of alternative processing of germline loci (by Kovner and Katz 2010) the minimum MDS 
+length was set as 25bp, which we maintain here as the minimum MDS size too.
+
+Now that some of these parameters have been explained, you are free to adjust them as much or as little as you want. What I have 
+included in the example command is what we have used in C. uncinata. As before, you can see in the output name that I try to keep it as 
+informative as possible and I recommend keeping up with this. 
+
+With this output Blast report, you are now ready for the next step!
+
+
+# 4.2 MDS-IES hunting
+
+Finally, the fun part. MDS_IES_Hunt_V3.py is still a work in progress, but the version uploaded is more than sufficient to help 'throw 
+away' obviously less useful data!
+
+As this was designed for TRANSCRIPTOME data, one of the criteria is that at least 60% of the transcripts length is sufficiently mapped... this is important to understand because this is likely to UNDERESTIMATE gene scrambling due to incomplete transcripts and germline loci. 
+
+I am not sure how this will impact genome data, so if you try this with complete chromosomes, please don't hesitate to contact me if weird things happen!
+
+There are only a few inputs that are needed (in this order):
+
+The blast report generated in the last step.
+A nice output name.
+A minimum pointer size (default is 2bp and I would NOT go shorter). 
+
+Example usage:
+
+katzlab$ python MDS_IES_Hunt_V3.py ChiloTrans.BSupGerm.97ID.Ungap.25wrd.tsv ChiloTrans.BSupGerm.97ID.Ungap.25wrd.2bpPointer 2
+
+This script will actually produce a new folder for you using your output name. Using the above example, the output folder will be:
+"ChiloTrans.BSupGerm.97ID.Ungap.25wrd.2bpPointer_Germ_dir"
+
+There will be an absolutely LARGE amount of output files that are thrown into that folder. There are four major spreadsheets to check out and differ only in the ending of their name. 
+
+'.Scram_Data.tsv' -- these are putative scrambled germline loci. I would grab a few transcripts and their corresponding germline loci
+and try several local alignments (or dot plots). If you have NGen, then MegAlign's dot-plots are pretty nice! 
+
+'.NonScram_Data.tsv' -- these are non-scrambled germline loci. These are great because you can simply align the soma and germline sequences and you should be able to easily identify pointer sequences. DO note that sometimes it is very difficult to distinguish between pointer and intron-exon boundaries, so I would look very carefully at several of these.
+
+'.SingletonTons_NoIntron.tsv' -- somatic sequences that aligned across their length without evidence of IESs nor introns. They could be incomplete transcripts or matching incomplete germline loci! See the note at the beginning of this section.
+
+'.Missing_Data.tsv' -- a special type of scrambled data. These data contained enough mapped base-pairs to be retained, yet are missing an internal MDS (e.g. MDS 1 and 3 are mapped, but MDS 2 remains missing).
+
+
+## 5. Interpreting results
+
+Following the basic outline of the output files (above), I cannot stress the importance in double-checking by eye at least a few dozen of these loci. Alignments, dot-plot, whatever you prefer should be sufficient to help decide how these parameters function for your taxon of interest. 
+
+What helps often too is drawing a few of these loci down on paper until you become more familiar with the output spreadsheets.
+
+If for any reason, you are finding this difficult, as I have put in this little guide several times, please contact me. If you do, then please provide me with a fasta file of a few somatic sequences of interest and their corresponding germline loci and the spreadsheets. This way I can better help you interpret results!
+
+With that you can do some basic follow up and or scripting to look at the crazy germline genome architecture of your favorite taxa!
+
+Good luck!
+
+Xyrus (maurerax@gmail.com or xyrus.maurer-alcala@izb.unibe.ch)
