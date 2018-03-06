@@ -8,7 +8,7 @@ For a rough outline of the steps and software dependencies needed, see the "Germ
 
 These scripts were used for the following publication(s) (please cite, if using):
 
-"Maurer-Alcalá, X.X., Knight, R., L.A. Katz. Accepted. Exploring the Germline Genome of the Ciliate Chilodonella uncinata Through Single-cell ‘omics (Transcriptomics and Genomics)".
+"Maurer-Alcalá, X.X., Knight, R., L.A. Katz. 2018. Exploring the Germline Genome of the Ciliate Chilodonella uncinata Through Single-cell ‘omics (Transcriptomics and Genomics)". Mbio.
 
 "Maurer-Alcalá, X.X., Yan, Y., Pilling, O.P., Knight, R., L.A. Katz. in prep. Twisted Tales: Insights into Genome Diversity of Ciliates Using Single-cell Genomics".
 
