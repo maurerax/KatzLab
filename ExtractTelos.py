@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3.10
 
 ##__Updated__: 29_09_2017
 ##__Author__: Xyrus Maurer-Alcala; maurerax@gmail.com
@@ -8,7 +8,7 @@
 
 from Bio import SeqIO
 from Bio.Seq import Seq
-import argparse, os, regex, sys
+import argparse, os, re, sys
 from argparse import RawTextHelpFormatter,SUPPRESS
 
 
@@ -155,22 +155,48 @@ def grab_telos(args):
 	args.telomere+color.END+color.BOLD+' as the "seed"\n'+color.END)
 	
 	for i in inFasta:
-		if len(regex.findall('('+fwd_telos[0]+'){s<=1}',str(i.seq)[:50])) > 0:
+		if len(re.findall(fwd_telos[0],str(i.seq)[:50])) > 0:
 			with_fwd.append(i)
-		if len(regex.findall('('+fwd_telos[1]+'){s<=1}',str(i.seq)[:50])) > 0:
+		if len(re.findall(fwd_telos[1],str(i.seq)[:50])) > 0:
 			with_fwd.append(i)
-		if len(regex.findall('('+rev_telos[0]+'){s<=1}',str(i.seq)[-50:])) > 0:
+		if len(re.findall(rev_telos[0],str(i.seq)[-50:])) > 0:
 			with_rev.append(i)
-		if len(regex.findall('('+rev_telos[1]+'){s<=1}',str(i.seq)[-50:])) > 0:
+		if len(re.findall(rev_telos[1],str(i.seq)[-50:])) > 0:
 			with_rev.append(i)
 
+# Removing duplicates
 
-	with_rev = list(set(with_rev))
-	with_fwd = list(set(with_fwd))
+	# with_rev
+	
+	with_rev_single = []
+	all_id_r = []
 
-	with_both = list(set(with_rev).intersection(with_fwd))
+	for i in with_rev:
+		if i.id not in all_id_r:
+			with_rev_single.append(i)
+			all_id_r.append(i.id)
+				
+	# with_fwd
 
-	single_telo = list(set(with_rev) ^ set(with_fwd))
+	with_fwd_single = []
+	all_id_f = []
+
+	for i in with_fwd:
+		if i.id not in all_id_f:
+			with_fwd_single.append(i)
+			all_id_f.append(i.id)
+
+# Separating sequences with telomere markers at both ends from those with markers at only one end
+
+	with_both = []
+	single_telo = []
+
+	for i in with_rev_single:
+		if i.id in all_id_f:
+			with_both.append(i)
+		else:
+			single_telo.append(i)
+
 
 	print (color.BOLD+'\nOf the initial '+color.GREEN+str(len(inFasta))+color.END+color.BOLD+\
 	' contigs, there were '+color.ORANGE+str(len(with_both))+color.END+color.BOLD+' complete'\
@@ -210,5 +236,3 @@ def main():
 	save_telomeric_seqs(args)
 	
 main()
-	
-	
